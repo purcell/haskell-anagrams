@@ -15,15 +15,6 @@ import qualified Data.Tree           as Tr
 type Word = Text
 type Dictionary = Set Word
 
-readDict :: IO Dictionary
-readDict = (S.filter goodWord . S.fromList . T.lines) <$> TIO.readFile "/usr/share/dict/words"
-
-goodWord :: Word -> Bool
-goodWord "A" = True
-goodWord "I" = True
-goodWord "O" = True
-goodWord w   = T.length w > 1
-
 type Anagram = MultiSet Word
 type Letters = MultiSet Char
 
@@ -55,3 +46,10 @@ expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
 wordLetters :: Word -> Letters
 wordLetters = MS.fromList . filter (not . isSpace) . T.unpack
 
+
+readDict :: IO Dictionary
+readDict = (S.filter goodWord . S.fromList . T.lines) <$> TIO.readFile "/usr/share/dict/words"
+  where goodWord "A" = True
+        goodWord "I" = True
+        goodWord "O" = True
+        goodWord w   = T.length w > 1
