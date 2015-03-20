@@ -10,6 +10,7 @@ import qualified Data.Set            as S
 import           Data.Text           (Text)
 import qualified Data.Text           as T
 import qualified Data.Text.IO        as TIO
+import           Data.Tree           (Tree)
 import qualified Data.Tree           as Tr
 
 type Word = Text
@@ -24,13 +25,17 @@ type SearchState = (Anagram, Letters, Dictionary)
 -- The anagrams with the fewest words are returned first, which can lead to
 -- high memory usage.
 anagrams :: Dictionary -> Word -> [Text]
-anagrams dict source = extractAnagrams $ breadthFirstNodes $ Tr.unfoldTree expand initialState
+anagrams dict source =
+  map extractAnagram $ filter noLettersRemaining $ breadthFirstNodes $ search dict source
   where breadthFirstNodes = concat . Tr.levels
-        initialState = (MS.empty, wordLetters source, dict)
+        noLettersRemaining (_, remaining, _) = MS.null remaining
 
-extractAnagrams :: [SearchState] -> [Text]
-extractAnagrams = map (\(ana, _, _) -> T.unwords $ MS.toList ana) . filter noLettersRemaining
-  where noLettersRemaining (_, remaining, _) = MS.null remaining
+search :: Dictionary -> Word -> Tree SearchState
+search dict source = Tr.unfoldTree expand initialState
+  where initialState = (MS.empty, wordLetters source, dict)
+
+extractAnagram :: SearchState -> Text
+extractAnagram (ana, _, _) = T.unwords $ MS.toList ana
 
 expand :: SearchState -> (SearchState, [SearchState])
 expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
