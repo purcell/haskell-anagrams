@@ -43,12 +43,14 @@ extractAnagrams = map (\(ana, _, _) -> T.unwords $ MS.toList ana) . filter noLet
 
 expand :: SearchState -> (SearchState, [SearchState])
 expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
-  where possibleWords = S.filter (\w -> wordLetters w `MS.isSubsetOf` remaining) dict
-        nextStates = fst $ foldl go ([], possibleWords) $ S.toList possibleWords
-          where go (states, d) word =
-                  ((MS.insert word wordsSoFar,
-                    remaining `MS.difference` wordLetters word, d):states,
-                   S.delete word d)
+  where
+    possibleWords = S.filter (remaining `canSpell`) dict
+    nextStates = fst $ foldl go ([], possibleWords) $ S.toList possibleWords
+    go (states, d) word =
+      ((MS.insert word wordsSoFar,
+        remaining `MS.difference` wordLetters word, d):states,
+       S.delete word d)
+    canSpell letters word = wordLetters word `MS.isSubsetOf` letters
 
 wordLetters :: Word -> Letters
 wordLetters = MS.fromList . filter (not . isSpace) . T.unpack
