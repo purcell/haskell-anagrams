@@ -5,7 +5,7 @@ name:                anagrams
 version:             0.1.0.0
 synopsis:            Generate anagrams of words
 -- description:
-homepage:            https://github.com/purcell/anagrams
+homepage:            https://github.com/purcell/haskell-anagrams
 license:             GPL-3
 license-file:        LICENSE
 author:              Steve Purcell
