@@ -41,6 +41,9 @@ expand :: SearchState -> (SearchState, [SearchState])
 expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
   where
     possibleWords = S.filter (remaining `canSpell`) dict
+    -- As we generate new branches, we remove words for which we have
+    -- already created a branch: this ensures that independent branches
+    -- will not generate identical sets of words.
     nextStates = fst $ foldl go ([], possibleWords) $ S.toList possibleWords
     go (states, d) word =
       ((MS.insert word wordsSoFar,
