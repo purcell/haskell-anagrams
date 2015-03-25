@@ -3,6 +3,7 @@ module Anagrams(anagrams, readDict) where
 
 import           Control.Applicative ((<$>))
 import           Data.Char           (isAlpha)
+import           Data.Maybe          (catMaybes)
 import           Data.MultiSet       (MultiSet)
 import qualified Data.MultiSet       as MS
 import           Data.Set            (Set)
@@ -24,22 +25,22 @@ type SearchState = (Anagram, Letters, Dictionary)
 -- | Generate anagrams of the given word using the dictionary supplied.
 -- The anagrams with the fewest words are returned first, which can lead to
 -- high memory usage.
-anagrams :: Dictionary -> Word -> [Text]
+anagrams :: Dictionary -> Text -> [Text]
 anagrams dict source =
-  map extractAnagram $ filter noLettersRemaining $ breadthFirstNodes $ search dict source
+  map extractAnagram $ catMaybes $ breadthFirstNodes $ search dict source
   where breadthFirstNodes = concat . Tr.levels
-        noLettersRemaining (_, remaining, _) = MS.null remaining
 
-search :: Dictionary -> Word -> Tree SearchState
+search :: Dictionary -> Text -> Tree (Maybe Anagram)
 search dict source = Tr.unfoldTree expand initialState
   where initialState = (MS.empty, wordLetters source, dict)
 
-extractAnagram :: SearchState -> Text
-extractAnagram (ana, _, _) = T.unwords $ MS.toList ana
+extractAnagram :: Anagram -> Text
+extractAnagram = T.unwords . MS.toList
 
-expand :: SearchState -> (SearchState, [SearchState])
-expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
+expand :: SearchState -> (Maybe Anagram, [SearchState])
+expand (wordsSoFar, remaining, dict) = (completeAnagram, nextStates)
   where
+    completeAnagram = if MS.null remaining then Just wordsSoFar else Nothing
     possibleWords = S.filter (remaining `canSpell`) dict
     -- As we generate new branches, we remove words for which we have
     -- already created a branch: this ensures that independent branches
@@ -51,7 +52,7 @@ expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
        S.delete word d)
     canSpell letters word = wordLetters word `MS.isSubsetOf` letters
 
-wordLetters :: Word -> Letters
+wordLetters :: Text -> Letters
 wordLetters = MS.fromList . filter isAlpha . T.unpack . T.toLower
 
 
