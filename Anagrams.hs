@@ -2,7 +2,7 @@
 module Anagrams(anagrams, readDict) where
 
 import           Control.Applicative ((<$>))
-import           Data.Char           (isSpace)
+import           Data.Char           (isAlpha)
 import           Data.MultiSet       (MultiSet)
 import qualified Data.MultiSet       as MS
 import           Data.Set            (Set)
@@ -52,7 +52,7 @@ expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
     canSpell letters word = wordLetters word `MS.isSubsetOf` letters
 
 wordLetters :: Word -> Letters
-wordLetters = MS.fromList . filter (not . isSpace) . T.unpack . T.toLower
+wordLetters = MS.fromList . filter isAlpha . T.unpack . T.toLower
 
 
 readDict :: IO Dictionary
