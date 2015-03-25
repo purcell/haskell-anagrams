@@ -52,7 +52,7 @@ expand anagram@(wordsSoFar, remaining, dict) = (anagram, nextStates)
     canSpell letters word = wordLetters word `MS.isSubsetOf` letters
 
 wordLetters :: Word -> Letters
-wordLetters = MS.fromList . filter (not . isSpace) . T.unpack
+wordLetters = MS.fromList . filter (not . isSpace) . T.unpack . T.toLower
 
 
 readDict :: IO Dictionary
